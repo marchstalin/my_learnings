@@ -1,0 +1,37 @@
+- name: Deploy Jenkins in Docker
+  hosts: app
+  become: true
+  vars:
+    jenkins_image: jenkins/jenkins:lts
+    jenkins_container_name: jenkins
+    copy_vault_into_container: false
+  tasks:
+    - name: Pull Jenkins Docker image
+      community.docker.docker_image:
+        name: "{{ jenkins_image }}"
+        source: pull
+
+    - name: Run Jenkins container
+      community.docker.docker_container:
+        name: "{{ jenkins_container_name }}"
+        image: "{{ jenkins_image }}"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "8080:8080"
+          - "50000:50000"
+        volumes:
+          - "/srv/jenkins:/var/jenkins_home"
+
+    - name: Optionally copy encrypted vault file into container
+      when: copy_vault_into_container
+      copy:
+        src: "{{ playbook_dir }}/../group_vars/all/vault.yml"
+        dest: "/var/jenkins_home/vault.yml"
+      delegate_to: localhost
+
+    - name: Optionally install Ansible inside container (for vault operations)
+      when: copy_vault_into_container
+      community.docker.docker_container_exec:
+        container: "{{ jenkins_container_name }}"
+        command: pip3 install --user ansible hvac

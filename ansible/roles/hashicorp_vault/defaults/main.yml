@@ -1,0 +1,7 @@
+---
+# Enable fetching from HashiCorp Vault
+use_hashicorp_vault: false
+
+# Vault connection settings (only used if `use_hashicorp_vault` is true)
+vault_addr: "http://127.0.0.1:8200"
+vault_token: "REPLACE_AND_KEEP_SECRET"

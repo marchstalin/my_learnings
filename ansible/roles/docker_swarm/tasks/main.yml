@@ -1,0 +1,52 @@
+- name: Install Docker packages
+  package:
+    name:
+      - docker.io
+      - python3-pip
+    state: present
+  become: true
+
+- name: Ensure Docker service is started
+  service:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+- name: Install Docker Python module
+  pip:
+    name: docker
+    state: present
+    executable: pip3
+  become: true
+
+- name: Initialize Docker Swarm on manager
+  command: docker swarm init --advertise-addr {{ ansible_host }}
+  args:
+    creates: /tmp/docker-swarm-initialized
+  when: inventory_hostname in groups['swarm_managers'][:1]
+  register: swarm_init
+  changed_when: swarm_init.rc == 0
+  failed_when: swarm_init.rc not in [0, 1]
+  become: true
+
+- name: Save manager join token
+  command: docker swarm join-token -q worker
+  when: inventory_hostname in groups['swarm_managers'][:1]
+  register: swarm_worker_token
+  changed_when: false
+  become: true
+
+- name: Add swarm worker nodes
+  command: docker swarm join --token {{ swarm_worker_token.stdout }} {{ hostvars[groups['swarm_managers'][0]].ansible_host }}:2377
+  when:
+    - inventory_hostname in groups['swarm_workers']
+    - swarm_worker_token is defined
+  become: true
+
+- name: Create /tmp/docker-swarm-initialized marker on manager
+  file:
+    path: /tmp/docker-swarm-initialized
+    state: touch
+  when: inventory_hostname in groups['swarm_managers'][:1]
+  become: true

@@ -1,0 +1,44 @@
+- name: Deploy Nexus Repository Manager (Docker)
+  hosts: app
+  become: true
+  vars:
+    nexus_image: sonatype/nexus3:latest
+    nexus_container_name: nexus
+    nexus_port: 8081
+    copy_vault_into_container: false
+  tasks:
+    - name: Pull Nexus Docker image
+      community.docker.docker_image:
+        name: "{{ nexus_image }}"
+        source: pull
+
+    - name: Run Nexus container
+      community.docker.docker_container:
+        name: "{{ nexus_container_name }}"
+        image: "{{ nexus_image }}"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "{{ nexus_port }}:8081"
+        volumes:
+          - "/srv/nexus-data:/nexus-data"
+
+    - name: Optionally copy encrypted vault file into container
+      when: copy_vault_into_container
+      copy:
+        src: "{{ playbook_dir }}/../group_vars/all/vault.yml"
+        dest: "/srv/nexus-data/vault.yml"
+      delegate_to: localhost
+
+    - name: Optionally install Ansible/hvac inside container (for vault operations)
+      when: copy_vault_into_container
+      community.docker.docker_container_exec:
+        container: "{{ nexus_container_name }}"
+        command: pip3 install --user ansible hvac
+
+    - name: Note about admin password
+      debug:
+        msg: |
+          Nexus initial admin password is stored in /nexus-data/admin.password inside the container on first start.
+          To set or rotate the admin password programmatically, use the Nexus REST API after the container is healthy.
+          Admin user placeholder in vaulted vars: `nexus_admin_user`, `nexus_admin_password`.

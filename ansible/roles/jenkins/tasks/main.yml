@@ -1,0 +1,14 @@
+- name: Install Java and Jenkins
+  package:
+    name:
+      - openjdk-11-jdk
+      - jenkins
+    state: present
+  become: true
+
+- name: Ensure Jenkins is running
+  service:
+    name: jenkins
+    state: started
+    enabled: true
+  become: true

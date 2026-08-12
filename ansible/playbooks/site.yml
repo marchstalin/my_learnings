@@ -1,0 +1,20 @@
+- name: Provision secrets and infrastructure
+  hosts: all
+  become: true
+  roles:
+    - hashicorp_vault
+
+- name: Provision monitoring systems
+  hosts: monitoring
+  become: true
+  roles:
+    - prometheus
+
+- name: Deploy CI platforms on app hosts
+  hosts: app
+  become: true
+  roles:
+    - docker_swarm
+    - jenkins
+    - gitlab
+    - gitlab_runner

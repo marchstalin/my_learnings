@@ -1,0 +1,15 @@
+# This file contains secrets that MUST be encrypted with ansible-vault.
+# Example variables to keep in vault: tokens, passwords, keys.
+
+# -- Example placeholders (replace and encrypt) --
+gitlab_root_password: "REPLACE_AND_ENCRYPT"
+gitlab_runner_registration_token: "REPLACE_AND_ENCRYPT"
+jenkins_admin_password: "REPLACE_AND_ENCRYPT"
+
+# Nexus (Sonatype) credentials - encrypt these values
+nexus_admin_user: "admin"
+nexus_admin_password: "REPLACE_AND_ENCRYPT"
+nexus_docker_repo_password: "REPLACE_AND_ENCRYPT"
+
+# Encrypt this file with:
+# ansible-vault encrypt group_vars/all/vault.yml
