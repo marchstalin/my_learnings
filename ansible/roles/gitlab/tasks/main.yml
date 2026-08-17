@@ -1,0 +1,18 @@
+- name: Install dependencies for GitLab
+  package:
+    name:
+      - curl
+      - ca-certificates
+    state: present
+  become: true
+
+- name: Install GitLab (placeholder)
+  debug:
+    msg: "Install GitLab CE here (set gitlab_external_url in vars)"
+
+- name: Ensure GitLab service is running (placeholder)
+  service:
+    name: gitlab-runsvdir
+    state: started
+    enabled: true
+  become: true

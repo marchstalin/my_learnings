@@ -1,0 +1,18 @@
+- name: Ensure Python hvac is installed (for Vault access)
+  pip:
+    name: hvac
+    state: present
+  become: true
+  when: use_hashicorp_vault | default(false)
+
+- name: Load secrets from Vault or fall back to vaulted vars
+  set_fact:
+    gitlab_root_password: "{{ lookup('env', 'GITLAB_ROOT_PASSWORD') | default(gitlab_root_password | default(omit)) }}"
+    gitlab_runner_registration_token: "{{ lookup('env', 'GITLAB_RUNNER_TOKEN') | default(gitlab_runner_registration_token | default(omit)) }}"
+    jenkins_admin_password: "{{ lookup('env', 'JENKINS_ADMIN_PASSWORD') | default(jenkins_admin_password | default(omit)) }}"
+  when: not use_hashicorp_vault | default(false)
+
+- name: Placeholder: fetch secrets from HashiCorp Vault when enabled
+  debug:
+    msg: "HashiCorp Vault enabled but fetching is not implemented in this template. Set `use_hashicorp_vault: true` and implement the lookup in this role (example provided in README)."
+  when: use_hashicorp_vault | default(false)

@@ -1,0 +1,3 @@
+---
+# Defaults for Prometheus role
+prometheus_version: "latest"

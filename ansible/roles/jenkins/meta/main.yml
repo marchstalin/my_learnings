@@ -1,0 +1,3 @@
+---
+dependencies:
+	- hashicorp_vault

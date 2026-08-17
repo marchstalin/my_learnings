@@ -1,0 +1,42 @@
+- name: Deploy GitLab in Docker
+  hosts: app
+  become: true
+  vars:
+    gitlab_image: gitlab/gitlab-ce:latest
+    gitlab_container_name: gitlab
+    copy_vault_into_container: false
+  tasks:
+    - name: Pull GitLab Docker image
+      community.docker.docker_image:
+        name: "{{ gitlab_image }}"
+        source: pull
+
+    - name: Run GitLab container
+      community.docker.docker_container:
+        name: "{{ gitlab_container_name }}"
+        image: "{{ gitlab_image }}"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "80:80"
+          - "443:443"
+          - "22:22"
+        env:
+          GITLAB_ROOT_PASSWORD: "{{ gitlab_root_password | default(omit) }}"
+        volumes:
+          - "/srv/gitlab/config:/etc/gitlab"
+          - "/srv/gitlab/logs:/var/log/gitlab"
+          - "/srv/gitlab/data:/var/opt/gitlab"
+
+    - name: Optionally copy encrypted vault file into container
+      when: copy_vault_into_container
+      copy:
+        src: "{{ playbook_dir }}/../group_vars/all/vault.yml"
+        dest: "/srv/gitlab/config/vault.yml"
+      delegate_to: localhost
+
+    - name: Optionally install Ansible inside container (for vault operations)
+      when: copy_vault_into_container
+      community.docker.docker_container_exec:
+        container: "{{ gitlab_container_name }}"
+        command: pip3 install --user ansible hvac

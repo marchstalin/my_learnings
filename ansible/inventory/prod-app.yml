@@ -1,0 +1,20 @@
+all:
+  vars:
+    ansible_user: ubuntu
+  children:
+    prod-app:
+      children:
+        app:
+          children:
+            swarm_managers: {}
+            swarm_workers: {}
+    swarm_managers:
+      hosts:
+        app-prod-01.example.com:
+          ansible_host: 10.0.2.10
+    swarm_workers:
+      hosts:
+        app-prod-02.example.com:
+          ansible_host: 10.0.2.11
+        app-prod-03.example.com:
+          ansible_host: 10.0.2.12

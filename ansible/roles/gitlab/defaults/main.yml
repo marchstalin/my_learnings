@@ -1,0 +1,3 @@
+---
+gitlab_external_url: "http://gitlab.example.com"
+gitlab_root_password: "REPLACE_AND_ENCRYPT"

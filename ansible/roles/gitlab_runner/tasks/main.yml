@@ -1,0 +1,13 @@
+- name: Install GitLab Runner package
+  package:
+    name: gitlab-runner
+    state: present
+  become: true
+
+- name: Register GitLab Runner if token provided
+  command: >
+    gitlab-runner register --non-interactive --url {{ gitlab_url }}
+    --registration-token {{ gitlab_runner_registration_token }}
+    --executor shell --tag-list "{{ gitlab_runner_tags | default('shared') }}"
+  when: gitlab_runner_registration_token is defined and gitlab_url is defined
+  become: true

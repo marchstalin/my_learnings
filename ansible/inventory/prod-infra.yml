@@ -1,0 +1,10 @@
+all:
+  vars:
+    ansible_user: ubuntu
+  children:
+    prod-infra:
+      children:
+        monitoring:
+          hosts:
+            prometheus-prod.example.com:
+              ansible_host: 10.0.2.11
